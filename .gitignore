@@ -1,0 +1,12 @@
+*.pyc
+__pycache__/
+.DS_Store
+Thumbs.db
+*.ipk
+*.bak
+*.log
+release/
+istore/openwrt-app-actions/
+*.apk
+dist/
+*.rsa

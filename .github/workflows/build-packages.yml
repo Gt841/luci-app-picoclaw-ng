@@ -1,0 +1,57 @@
+name: Build packages
+
+# 同时产出两种格式：
+#   - IPK: opkg 系统（OpenWrt 24.10 及更早）
+#   - APK: apk-tools 3 / v3 ADB 格式（OpenWrt 25.x）
+#
+# 说明：APK v3 必须由 apk-tools 3 的 `apk mkpkg` 生成，
+# 日常开发机（macOS/Windows）没有这个工具，所以这里放到 Alpine 容器里构建。
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  ipk:
+    name: IPK (opkg)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build IPK
+        run: python3 scripts/build-ipk.py
+
+      - name: Upload IPK
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-app-picoclaw-ng-ipk
+          path: |
+            dist/*.ipk
+            dist/*-source.tar.gz
+          if-no-files-found: error
+
+  apk:
+    name: APK v3 (apk-tools 3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build APK in Alpine (apk mkpkg)
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            alpine:edge \
+            sh -c 'apk --version && apk mkpkg --help >/dev/null && sh scripts/build-apk-v3.sh'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-app-picoclaw-ng-apk
+          path: dist/*.apk
+          if-no-files-found: error
