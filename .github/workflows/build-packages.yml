@@ -47,7 +47,7 @@ jobs:
             -v "$PWD:/work" \
             -w /work \
             alpine:edge \
-            sh -c 'apk --version && apk mkpkg --help >/dev/null && sh scripts/build-apk-v3.sh'
+            sh -c 'apk --version && sh scripts/build-apk-v3.sh'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
